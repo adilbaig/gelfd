@@ -33,52 +33,52 @@ public :
 	
 	alias Message gelf;
 	
-/**
-
-The $(D_PARAM gelf) struct provides a convenient way to create and inspect a GELF message.
-
-Example:
--------------------------
-writeln(gelf("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
-writeln(gelf("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
--------------------------
-
-GELF messages can also be created in multiple steps. This allows you to add in custom values using loops or other code
-
-Example:
--------------------------
-// Let's create a GELF message using properties
-auto m = gelf("localhost","HUGE ERROR!");
-m.level = Level.ERROR;
-m.timestamp = Clock.currTime();
-m.a_number = 7;
-
-// Now let's add some environment variables in
-import std.process;
-foreach(v, k; environment.toAA())
-	m[k] = v;
-
-writeln(m); // {"version":1.1, "host:"localhost", "short_message":"HUGE ERROR!", "timestamp":1447275799, "level":3, "_a_number":7, "_PATH":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games", ...}
--------------------------
-
-A simpler method is to use a fluent interface. This example also shows how values from a Message can be read and used in a conditional statement.
-
-Example:
--------------------------
-// Use the fluent interface ..
-auto m1 = gelf("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
-
-// Values can be checked for conditions. Here we only send messages of Level.ERROR or more severity to Graylog 
-if(m1.level <= Level.ERROR) {
-	auto s = new UdpSocket();
-	s.connect(new InternetAddress("localhost", 11200));
-	s.send(m1.toString());
-}
-
-writeln(m1); //{"version":1.1, "host:"localhost", "short_message":"Divide by zero error", "timestamp":1447274923, "level":3, "_numerator":1000, "_PATH":"/usr/bin/"}
--------------------------
-
-*/
+	/**
+	
+	The $(D_PARAM gelf) struct provides a convenient way to create and inspect a GELF message.
+	
+	Example:
+	-------------------------
+	writeln(gelf("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
+	writeln(gelf("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
+	-------------------------
+	
+	GELF messages can also be created in multiple steps. This allows you to add in custom values using loops or other code
+	
+	Example:
+	-------------------------
+	// Let's create a GELF message using properties
+	auto m = gelf("localhost","HUGE ERROR!");
+	m.level = Level.ERROR;
+	m.timestamp = Clock.currTime();
+	m.a_number = 7;
+	
+	// Now let's add some environment variables in
+	import std.process;
+	foreach(v, k; environment.toAA())
+		m[k] = v;
+	
+	writeln(m); // {"version":1.1, "host:"localhost", "short_message":"HUGE ERROR!", "timestamp":1447275799, "level":3, "_a_number":7, "_PATH":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games", ...}
+	-------------------------
+	
+	A simpler method is to use a fluent interface. This example also shows how values from a Message can be read and used in a conditional statement.
+	
+	Example:
+	-------------------------
+	// Use the fluent interface ..
+	auto m1 = gelf("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
+	
+	// Values can be checked for conditions. Here we only send messages of Level.ERROR or more severity to Graylog 
+	if(m1.level <= Level.ERROR) {
+		auto s = new UdpSocket();
+		s.connect(new InternetAddress("localhost", 11200));
+		s.send(m1.toString());
+	}
+	
+	writeln(m1); //{"version":1.1, "host:"localhost", "short_message":"Divide by zero error", "timestamp":1447274923, "level":3, "_numerator":1000, "_PATH":"/usr/bin/"}
+	-------------------------
+	
+	*/
 	struct Message
 	{
 		const string host;
@@ -149,7 +149,7 @@ writeln(m1); //{"version":1.1, "host:"localhost", "short_message":"Divide by zer
 		
 		void toString(scope void delegate(const(char)[]) sink) const
 		{
-			sink("{\"version\":1.1, \"host:\"" ~ host ~ "\", \"short_message\":\"" ~ short_message ~ "\"");
+			sink("{\"version\":1.1, \"host\":\"" ~ host ~ "\", \"short_message\":\"" ~ short_message ~ "\"");
 			
 			if (full_message)
 				sink(", \"full_message\":\"" ~ full_message ~ "\"");
@@ -184,3 +184,17 @@ private:
 		}
 	}
 
+unittest
+{
+	auto s = gelf("localhost","SOME ERROR!").toString();
+	auto s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"level\":1}";
+	
+	s = gelf("localhost","SOME ERROR!", Level.ERROR).toString();
+	s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"level\":3}";
+	assert(s == s1);
+	
+	auto m = gelf("localhost","SOME ERROR!").PATH("/usr/bin/").Timeout(3000).level(Level.ERROR);
+	assert(m.PATH == "/usr/bin/");
+	assert(m.Timeout == "3000"); //NOTE : Numbers are converted to strings and stored
+	assert(m.level == Level.ERROR);
+}

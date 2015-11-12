@@ -1,6 +1,7 @@
 {
-	"name" : "gelf",
-	"description" : "Hello World - A minimal DUB bundle.",
-	"dependencies" : {
-	}
+	"name": "gelfd",
+	"description": "GELF protocol for D.",
+	"authors": ["Adil Baig"],
+	"homepage": "https://github.com/adilbaig/gelfd",
+	"license": "MIT"
 }
