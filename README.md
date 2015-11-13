@@ -6,13 +6,11 @@ GELF stands for the [Graylog Extended Logging Format](https://www.graylog.org/re
 
 It is an open standard logging format based on JSON. It is primarily used to pipe messages to [Graylog](www.graylog.org/overview/), the open source log management and analysis platform. 
 
-Using GELF avoids the shortcomings of logging to plain syslog, namely :
-- lack of data types in structured syslog
-- lack of ability to provide queryable payload along with messages (stack traces, timeouts etc)
+Using GELF avoids the shortcomings of logging to plain syslog, most importantly the lack of a structured payload along with messages (stack traces, timeouts etc).
 
 GELF is a pure JSON format. It describes how log messages should be structured. In addition, it also describes compression of messages and chunking of large messages over UDP.
 
-This module aims to provide a simple, yet structured, way of generating log messages in GELF format. You can combine messages with arbitrary payload data, and construct messages in multiple parts. Message contents are queryable as well. See examples below
+This module aims to provide a simple, yet structured, way of generating log messages in GELF format. You can combine messages with arbitrary payload data and construct messages in multiple parts. Message contents are queryable as well. See examples below.
 
 ## Installation
 
@@ -35,12 +33,18 @@ rdmd -main -unittest src/gelf.d
 
 ## Usage
 
+This is the simplest way to create a GELF message.
 ````
 import stdx.protocol.gelf;
 
 // A simple way of creating a GELF message
 writeln(gelf("localhost", "The error message"));
 ````
+
+GELF messages are composed in a `gelf` struct. The struct supports :
+- `opString` - writing to a string generates a JSON string.
+- `opDispatch` - payload data can be added as functions or properties. It can also be read as properties.
+- `opIndexAssign` - payload data can be assigned like an associative array.
 
 ````
 import std.stdio;
