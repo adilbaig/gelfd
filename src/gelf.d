@@ -103,6 +103,9 @@ public :
 		auto level() { return lvl; }
 		auto level(Level l) { lvl = l; return this; }
 		
+		auto fullMessage() { return full_message; }
+		auto fullMessage(string msg) { full_message = msg; return this; }
+		
 		auto timestamp(SysTime sysTime)
 		{
 			ts = to!string(sysTime.toUnixTime());
@@ -149,10 +152,12 @@ public :
 		
 		void toString(scope void delegate(const(char)[]) sink) const
 		{
-			sink("{\"version\":1.1, \"host\":\"" ~ host ~ "\", \"short_message\":\"" ~ short_message ~ "\"");
+			import std.string : replace;
+			
+			sink("{\"version\":1.1, \"host\":\"" ~ host ~ "\", \"short_message\":\"" ~ replace(short_message,"\"", "\\\"") ~ "\"");
 			
 			if (full_message)
-				sink(", \"full_message\":\"" ~ full_message ~ "\"");
+				sink(", \"full_message\":\"" ~ replace(full_message, "\"", "\\\"") ~ "\"");
 				
 			if (ts)
 				sink(", \"timestamp\":" ~ ts);
@@ -161,7 +166,7 @@ public :
 			
 			foreach(k, v; fields) {
 				sink(", \"_"~k~"\":");
-				sink((v.enclose == 0) ? v.val : "\"" ~ v.val ~ "\"");
+				sink((v.enclose == 0) ? v.val : "\"" ~ replace(v.val,"\"", "\\\"") ~ "\"");
 			}
 			
 			sink("}");
