@@ -202,4 +202,9 @@ unittest
 	assert(m.PATH == "/usr/bin/");
 	assert(m.Timeout == "3000"); //NOTE : Numbers are converted to strings and stored
 	assert(m.level == Level.ERROR);
+	
+	// Strings are automatically escaped.
+	s = gelf("localhost", "SOME ERROR!").fullMessage("{\"name\" : \"Adil\"}").toString();
+	s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"full_message\":\"{\\\"name\\\" : \\\"Adil\\\"}\"}";
+	assert(s == s);
 }
