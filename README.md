@@ -88,18 +88,22 @@ void main() {
 
 ## Chunking and Compression
 
-This is support using the `sendChunked` function.
+Chunking and compression are supported automatically using the `sendChunked` function.
 
 ````
-	import stdx.graylog;
-	import std.socket;
-	
-	auto s = new UdpSocket();
-	s.connect(new InternetAddress("localhost", 12200));
-	
-	// Start netcat to watch the output : `nc -lu 12200`
-	
-	s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
-	s.sendChunked(m, 500, true); // Same as above, but compresses the message (zlib) before chunking
+import stdx.graylog;
+import std.socket;
+
+auto s = new UdpSocket();
+s.connect(new InternetAddress("localhost", 12200));
+
+// Start netcat to watch the output : `nc -lu 12200`
+
+s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
+s.sendChunked(m, 500, true); // Same as above, but compresses the message (zlib) before chunking
 ````
 
+## Licence
+MIT License
+
+Adil Baig
