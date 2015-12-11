@@ -2,16 +2,15 @@ import std.stdio;
 import std.datetime;
 import std.socket;
 
-import stdx.graylog;
-import stdx.protocol.gelf;
+import gelf;
 
 void main() {
 	
-	writeln(gelf("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
-	writeln(gelf("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
+	writeln(Message("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
+	writeln(Message("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
 	
 	// Let's create a GELF message using properties
-	auto m = gelf("localhost","HUGE ERROR!");
+	auto m = Message("localhost","HUGE ERROR!");
 	m.level = Level.ERROR;
 	m.timestamp = Clock.currTime();
 	m.a_number = 7;
@@ -24,7 +23,7 @@ void main() {
 	writeln(m); // {"version":1.1, "host:"localhost", "short_message":"HUGE ERROR!", "timestamp":1447275799, "level":3, "_a_number":7, "_PATH":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games", ...}
 	
 	// OR, use the fluent interface ..
-	auto m1 = gelf("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
+	auto m1 = Message("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
 	
 	// Values can be checked for conditions. Here we only send messages of Level.ERROR or more severity to Graylog 
 	if(m1.level <= Level.ERROR) {

@@ -20,28 +20,28 @@ See documentation on the [project dub page](http://code.dlang.org/packages/gelfd
 
 ### Using DMD/LDC/GDC
 
-- Download `src/gelf.d`. This contains all source and unittests
-- Include it in your compile. `dmd MYFILE.d gelf.d`
+- Clone this repo
+- Compile your source with the gelf sources. `dmd MYFILE.d gelf/*`
 
 ## Unittests
 
 Run unittests like so :
 
 ````
-rdmd -main -unittest src/gelf.d
+rdmd -main -unittest gelf/protocol.d
 ````
 
 ## Usage
 
 This is the simplest way to create a GELF message.
 ````
-import stdx.protocol.gelf;
+import gelf;
 
 // A simple way of creating a GELF message
-writeln(gelf("localhost", "The error message"));
+writeln(Message("localhost", "The error message"));
 ````
 
-GELF messages are composed in a `gelf` struct. The struct supports :
+GELF messages are composed in a `Message` struct. The struct supports :
 - `opString` - writing to a string generates a JSON string.
 - `opDispatch` - payload data can be added as functions or properties. It can also be read as properties.
 - `opIndexAssign` - payload data can be assigned like an associative array.
@@ -51,15 +51,15 @@ import std.stdio;
 import std.datetime;
 import std.socket;
 
-import stdx.protocol.gelf;
+import gelf;
 
 void main() {
 	
-	writeln(gelf("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
-	writeln(gelf("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
+	writeln(Message("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
+	writeln(Message("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
 	
 	// Let's create a GELF message using properties
-	auto m = gelf("localhost","HUGE ERROR!");
+	auto m = Message("localhost","HUGE ERROR!");
 	m.level = Level.ERROR;
 	m.timestamp = Clock.currTime();
 	m.a_number = 7;
@@ -72,7 +72,7 @@ void main() {
 	writeln(m); // {"version":1.1, "host:"localhost", "short_message":"HUGE ERROR!", "timestamp":1447275799, "level":3, "_a_number":7, "_PATH":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games", ...}
 	
 	// OR, use the fluent interface ..
-	auto m1 = gelf("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
+	auto m1 = Message("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
 	
 	// Values can be checked for conditions. Here we only send messages of Level.ERROR or more severity to Graylog 
 	if(m1.level <= Level.ERROR) {
@@ -91,7 +91,7 @@ void main() {
 Chunking and compression are supported automatically using the `sendChunked` function.
 
 ````
-import stdx.graylog;
+import gelf;
 import std.socket;
 
 auto s = new UdpSocket();

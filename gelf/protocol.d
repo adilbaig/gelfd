@@ -11,7 +11,7 @@ This module aims to provide a very simple way of generating log messages in GELF
 Author:   Adil Baig 
 */
 
-module stdx.protocol.gelf;
+module gelf.protocol;
 
 private:
 	import std.conv : to;
@@ -31,16 +31,14 @@ public :
 	    DEBUG = LOG_DEBUG,
 	}
 	
-	alias Message gelf;
-	
 	/**
 	
-	The $(D_PARAM gelf) struct provides a convenient way to create and inspect a GELF message.
+	This struct provides a convenient way to create and inspect a GELF message.
 	
 	Example:
 	-------------------------
-	writeln(gelf("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
-	writeln(gelf("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
+	writeln(Message("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
+	writeln(Message("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
 	-------------------------
 	
 	GELF messages can also be created in multiple steps. This allows you to add in custom values using loops or other code
@@ -48,7 +46,7 @@ public :
 	Example:
 	-------------------------
 	// Let's create a GELF message using properties
-	auto m = gelf("localhost","HUGE ERROR!");
+	auto m = Message("localhost","HUGE ERROR!");
 	m.level = Level.ERROR;
 	m.timestamp = Clock.currTime();
 	m.a_number = 7;
@@ -66,7 +64,7 @@ public :
 	Example:
 	-------------------------
 	// Use the fluent interface ..
-	auto m1 = gelf("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
+	auto m1 = Message("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
 	
 	// Values can be checked for conditions. Here we only send messages of Level.ERROR or more severity to Graylog 
 	if(m1.level <= Level.ERROR) {
@@ -191,20 +189,20 @@ private:
 
 unittest
 {
-	auto s = gelf("localhost","SOME ERROR!").toString();
+	auto s = Message("localhost","SOME ERROR!").toString();
 	auto s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"level\":1}";
 	
-	s = gelf("localhost","SOME ERROR!", Level.ERROR).toString();
+	s = Message("localhost","SOME ERROR!", Level.ERROR).toString();
 	s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"level\":3}";
 	assert(s == s1);
 	
-	auto m = gelf("localhost","SOME ERROR!").PATH("/usr/bin/").Timeout(3000).level(Level.ERROR);
+	auto m = Message("localhost","SOME ERROR!").PATH("/usr/bin/").Timeout(3000).level(Level.ERROR);
 	assert(m.PATH == "/usr/bin/");
 	assert(m.Timeout == "3000"); //NOTE : Numbers are converted to strings and stored
 	assert(m.level == Level.ERROR);
 	
 	// Strings are automatically escaped.
-	s = gelf("localhost", "SOME ERROR!").fullMessage("{\"name\" : \"Adil\"}").toString();
+	s = Message("localhost", "SOME ERROR!").fullMessage("{\"name\" : \"Adil\"}").toString();
 	s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"full_message\":\"{\\\"name\\\" : \\\"Adil\\\"}\"}";
 	assert(s == s);
 }

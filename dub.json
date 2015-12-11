@@ -3,5 +3,6 @@
 	"description": "GELF protocol for D.",
 	"authors": ["Adil Baig"],
 	"homepage": "https://github.com/adilbaig/gelfd",
-	"license": "MIT"
+	"license": "MIT",
+	"sourcePaths": ["gelf"]
 }

@@ -1,13 +1,11 @@
-module stdx.graylog;
-
-public
-	import stdx.protocol.gelf;
+module gelf.transport;
 	
 private 
 	import std.socket : UdpSocket, InternetAddress;
     import std.random : uniform;
     import std.outbuffer;
     import std.range : chunks;
+    import gelf.protocol;
     
 public:
     
@@ -34,7 +32,7 @@ public:
     
 	Returns: The number of packets sent
 	*/
-	auto sendChunked(UdpSocket socket, gelf message, uint packetSizeBytes = 8192, bool compressed = false)
+	auto sendChunked(UdpSocket socket, Message message, uint packetSizeBytes = 8192, bool compressed = false)
 	{
 	    import std.zlib;
 		return chunkAndSend(socket, (compressed) ? compress(message.toString()) : cast(ubyte[])message.toString(), packetSizeBytes);
