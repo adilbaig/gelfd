@@ -40,7 +40,7 @@ public:
 	
 private:
 
-	pragma(inline, true):
+	pragma(inline):
 	auto chunkAndSend(UdpSocket socket, const(ubyte[]) message, uint packetSizeBytes)
 	{
 	    auto msgLength = message.length;
