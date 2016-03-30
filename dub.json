@@ -4,4 +4,16 @@
 	"authors": ["Adil Baig"],
 	"homepage": "https://github.com/adilbaig/gelfd",
 	"license": "MIT",
+	"configurations": [
+		{
+			"name": "default",
+            "targetType": "library",
+        },
+		{
+            "name": "example",
+            "mainSourceFile" : "example.d",
+            "targetName": "example",
+            "targetType": "executable",
+        }
+    ]
 }
