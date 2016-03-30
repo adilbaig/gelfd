@@ -4,5 +4,4 @@
 	"authors": ["Adil Baig"],
 	"homepage": "https://github.com/adilbaig/gelfd",
 	"license": "MIT",
-	"sourcePaths": ["gelf"]
 }
