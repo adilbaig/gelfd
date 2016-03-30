@@ -4,47 +4,27 @@ D module for the GELF protocol.
 ## What is GELF?
 GELF stands for the [Graylog Extended Logging Format](https://www.graylog.org/resources/gelf/).
 
-It is an open standard logging format based on JSON. It is primarily used to pipe messages to [Graylog](www.graylog.org/overview/), the open source log management and analysis platform. 
+It is an open standard logging format based on JSON. It is primarily used to pipe messages to [Graylog](www.graylog.org/overview/), the open source log management and analysis platform.
 
 Using GELF avoids the shortcomings of logging to plain syslog, most importantly the lack of a structured payload along with messages (stack traces, timeouts etc).
 
 GELF is a pure JSON format. It describes how log messages should be structured. In addition, it also describes compression of messages and chunking of large messages over UDP.
 
-This module aims to provide a simple, yet structured, way of generating log messages in GELF format. You can combine messages with arbitrary payload data and construct messages in multiple parts. Message contents are queryable as well. See examples below.
-
-## Installation
-
-### Using DUB
-
-See documentation on the [project dub page](http://code.dlang.org/packages/gelfd)
-
-### Using DMD/LDC/GDC
-
-- Clone this repo
-- Compile your source with the gelf sources. `dmd MYFILE.d gelf/*`
-
-## Unittests
-
-Run unittests like so :
-
-````
-rdmd -main -unittest gelf/protocol.d
-````
+This module aims to provide a simple, yet structured, way of generating log messages in the GELF format. You can combine messages with arbitrary payload data and construct messages in multiple parts. Message contents are also queryable. See examples below.
 
 ## Usage
 
-This is the simplest way to create a GELF message.
+The simplest way to create a GELF message is as follows :
 ````
 import gelf;
 
-// A simple way of creating a GELF message
-writeln(Message("localhost", "The error message"));
+writeln(Message("localhost", "An alert message"));
 ````
 
 GELF messages are composed in a `Message` struct. The struct supports :
-- `opString` - writing to a string generates a JSON string.
-- `opDispatch` - payload data can be added as functions or properties. It can also be read as properties.
-- `opIndexAssign` - payload data can be assigned like an associative array.
+- `opString` - writing or casting to a string generates the GELF message.
+- `opDispatch` - payload data can be added using user-defined functions or properties. It can also be read as properties.
+- `opIndexAssign` - payload data can also be assigned like an associative array.
 
 ````
 import std.stdio;
@@ -55,34 +35,39 @@ import gelf;
 
 void main() {
 	
-	writeln(Message("localhost","HUGE ERROR!")); //This creates a bare minimum GELF message
-	writeln(Message("localhost","HUGE ERROR!", Level.ERROR)); //This example uses the overloaded contructor to report an error
+	writeln(Message("localhost","An alert message")); // {"version":1.1, "host":"localhost", "short_message":"An alert message", "level":1}
+	writeln(Message("localhost","HUGE ERROR!", Level.ERROR)); //{"version":1.1, "host":"localhost", "short_message":"HUGE ERROR!", "level":3}
 	
-	// Let's create a GELF message using properties
+	// Let's create a GELF message using a number of user-defined properties
 	auto m = Message("localhost","HUGE ERROR!");
 	m.level = Level.ERROR;
 	m.timestamp = Clock.currTime();
 	m.a_number = 7;
 	
-	// Now let's add some environment variables in
+	// Now let's add some environment variables ..
 	import std.process;
 	foreach(v, k; environment.toAA())
-		m[k] = v;
+		m[k] = v; // .. using a associative array syntax
 	
 	writeln(m); // {"version":1.1, "host:"localhost", "short_message":"HUGE ERROR!", "timestamp":1447275799, "level":3, "_a_number":7, "_PATH":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games", ...}
 	
-	// OR, use the fluent interface ..
-	auto m1 = Message("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000).PATH("/usr/bin/");
+	// You can also generate a message using a fluent interface
+	auto m1 = Message("localhost", "Divide by zero error").level(Level.ERROR).timestamp(Clock.currTime()).numerator(1000);
 	
-	// Values can be checked for conditions. Here we only send messages of Level.ERROR or more severity to Graylog 
+	// Values are readable. Here, we only send messages of Level.ERROR or more severity to Graylog 
 	if(m1.level <= Level.ERROR) {
 		auto s = new UdpSocket();
 		s.connect(new InternetAddress("localhost", 11200));
 		s.send(m1.toString());
 	}
 	
-	writeln(m1); //{"version":1.1, "host:"localhost", "short_message":"Divide by zero error", "timestamp":1447274923, "level":3, "_numerator":1000, "_PATH":"/usr/bin/"}
-
+	auto s = new UdpSocket();
+	s.connect(new InternetAddress("localhost", 12200));
+	
+	// Start netcat to watch the output : `nc -lu 12200`
+	
+	s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
+	s.sendChunked(m, 500, true); // Same as above, but compresses the message (zlib) before chunking
 }
 ````
 
@@ -102,6 +87,37 @@ s.connect(new InternetAddress("localhost", 12200));
 s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
 s.sendChunked(m, 500, true); // Same as above, but compresses the message (zlib) before chunking
 ````
+
+## Installation
+
+You can install this package using dub, or download the source and compile it into your program.
+
+### Using DUB
+
+The recommended way if you use dub. See documentation on the [project dub page](http://code.dlang.org/packages/gelfd)
+
+### Using DMD/LDC/GDC
+
+- Clone this repo
+- Compile your source with the gelf sources. `dmd MYFILE.d source/gelf/*`
+
+## Unittests
+
+Run unittests like so :
+
+````
+dub test
+````
+
+## Run the Example script
+
+This script contains various examples of how to generate GELF messages. You don't need Graylog installed to check this, although it is recommended to atleast run `netcat` to see the output of chunked (and compressed) messages. To run example.d, do :
+
+````
+dmd example.d source/gelf/* -ofgelfExample;
+./gelfExample;
+````
+
 
 ## Licence
 MIT License
