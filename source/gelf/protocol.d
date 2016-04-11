@@ -139,12 +139,17 @@ public :
 
         string toString() @safe
         {
-            import std.array;
+            import std.array : appender;
 
             auto app = appender!string();
             toString((const(char)[] s) { app.put(s); });
 
             return app.data;
+        }
+        
+        immutable(ubyte[]) toBytes() @safe
+        {
+            return cast(typeof(return))this.toString();
         }
 
         void toString(Dg)(scope Dg sink) const
@@ -200,9 +205,12 @@ private:
     assert(m.PATH == "/usr/bin/");
     assert(m.Timeout == "3000"); //NOTE : Numbers are converted to strings and stored
     assert(m.level == Level.ERROR);
-
+    
     // Strings are automatically escaped.
     s = Message("localhost", "SOME ERROR!").fullMessage("{\"name\" : \"Adil\"}").toString();
     s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"full_message\":\"{\\\"name\\\" : \\\"Adil\\\"}\", \"level\":1}";
     assert(s == s1);
+    
+    //Check toBytes
+    assert(m.toBytes() == [123, 34, 118, 101, 114, 115, 105, 111, 110, 34, 58, 49, 46, 49, 44, 32, 34, 104, 111, 115, 116, 34, 58, 34, 108, 111, 99, 97, 108, 104, 111, 115, 116, 34, 44, 32, 34, 115, 104, 111, 114, 116, 95, 109, 101, 115, 115, 97, 103, 101, 34, 58, 34, 83, 79, 77, 69, 32, 69, 82, 82, 79, 82, 33, 34, 44, 32, 34, 108, 101, 118, 101, 108, 34, 58, 51, 44, 32, 34, 95, 84, 105, 109, 101, 111, 117, 116, 34, 58, 51, 48, 48, 48, 44, 32, 34, 95, 80, 65, 84, 72, 34, 58, 34, 47, 117, 115, 114, 47, 98, 105, 110, 47, 34, 125]);
 }
