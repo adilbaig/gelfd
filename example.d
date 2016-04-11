@@ -36,8 +36,12 @@ void main() {
     if(m1.level <= Level.ERROR)
         s.send(m1.toString());
     
-    // Start netcat to watch the output : `nc -lu 12200`
+    // Start netcat to watch the output : `nc -lu 11200`
     
-    s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
-    s.sendChunked(m, 500, true); // Same as above, but compresses the message (using zlib) before chunking
+    foreach(c; Chunks(m, 500)) // Chunk if message is larger than 500 bytes 
+        s.send(c); 
+    
+    import std.zlib : compress;
+    foreach(c; Chunks(compress(m.toBytes), 500)) // Same as above, but compresses the message (using zlib) before chunking
+        s.send(c);
 }
