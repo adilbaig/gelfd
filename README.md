@@ -66,8 +66,12 @@ void main() {
     
     // Start netcat to watch the output : `nc -lu 12200`
     
-    s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
-    s.sendChunked(m, 500, true); // Same as above, but compresses the message (using zlib) before chunking
+    foreach(c; Chunks(m, 500)) // Chunk if message is larger than 500 bytes 
+        s.send(c); 
+    
+    import std.zlib : compress;
+    foreach(c; Chunks(compress(m.toBytes), 500)) // Same as above, but compresses the message before chunking
+        s.send(c);
 }
 ````
 
@@ -86,6 +90,31 @@ s.connect(new InternetAddress("localhost", 12200));
 
 s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
 s.sendChunked(m, 500, true); // Same as above, but compresses the message (zlib) before chunking
+````
+
+This is simple, but not very flexible. sendChunked is a convenience function. 
+
+Chunking support is now provided with the `Chunks` struct. This is an InputRange that takes a `Message` or a compressed message and generates chunks from it.
+
+Using `Chunks` gives you the flexibility to :
+- Use blocking or non-blocking sockets as chunking is not tied to sockets anymore
+- Use zlib or gzip with user-defined levels of compression 
+
+````d
+import gelf;
+import std.socket;
+
+auto s = new UdpSocket();
+s.connect(new InternetAddress("localhost", 12200));
+
+// Start netcat to watch the output : `nc -lu 12200`
+
+    foreach(c; Chunks(m, 500)) // Chunk if message is larger than 500 bytes 
+        s.send(c); 
+    
+    import std.zlib : compress;
+    foreach(c; Chunks(compress(m.toBytes), 500)) // Same as above, but compresses the message (using zlib) before chunking
+        s.send(c);
 ````
 
 ## Installation
