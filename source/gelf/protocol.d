@@ -15,19 +15,18 @@ module gelf.protocol;
 
 import std.conv : to;
 import std.datetime : SysTime;
-import core.sys.posix.syslog;
 
 public :
 
     enum Level {
-        ALERT = LOG_ALERT,
-        EMERGENCY = LOG_EMERG,
-        CRITICAL = LOG_CRIT,
-        ERROR = LOG_ERR,
-        WARNING = LOG_WARNING,
-        NOTICE = LOG_NOTICE,
-        INFO = LOG_INFO,
-        DEBUG = LOG_DEBUG,
+        EMERGENCY = 0,
+        ALERT = 1,
+        CRITICAL = 2,
+        ERROR = 3,
+        WARNING = 4,
+        NOTICE = 5,
+        INFO = 6,
+        DEBUG = 7,
     }
 
     /**
