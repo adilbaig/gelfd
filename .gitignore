@@ -1,3 +1,6 @@
 .project
 .dub
 .settings
+/dub.selections.json
+*.a
+example
