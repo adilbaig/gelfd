@@ -43,6 +43,15 @@ public:
         }
         
         /**
+         In LDC 0.17.2, std.zlib.compress returns in const(void)[].
+         This ctor is the fix for now. Remove when LDC catches up.
+         */
+        this(const void[] message, uint chunkSize = 8192, ulong messageId = uniform(0, ulong.max))
+        {
+        	this(cast(ubyte[]) message, chunkSize, messageId);
+        }
+        
+        /**
          Use this when you've converted a message to bytes. Use this after you have compressed your message
          
          Params:
@@ -120,7 +129,7 @@ public:
     auto sendChunked(Socket socket, Message message, uint packetSizeBytes = 8192, bool compressed = false)
     {
         import std.zlib;
-        foreach(c; Chunks((compressed) ? compress(message.toString()) : message.toBytes(), 500))
+        foreach(c; Chunks((compressed) ? cast(ubyte[])compress(message.toString()) : message.toBytes(), 500))
             socket.send(c);
     }
 
