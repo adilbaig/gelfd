@@ -7,13 +7,13 @@
 	"configurations": [
 		{
 			"name": "default",
-            "targetType": "library",
+            "targetType": "library"
         },
 		{
             "name": "example",
             "mainSourceFile" : "example.d",
             "targetName": "example",
-            "targetType": "executable",
+            "targetType": "executable"
         }
     ]
 }
