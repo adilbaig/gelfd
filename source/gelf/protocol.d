@@ -184,7 +184,7 @@ private:
 
         this(V)(V val)
         {
-            static if (!is(V : size_t))
+            static if (!is(V : size_t) || is(V == enum))
                 enclose = true;
 
             this.val = to!string(val);
@@ -204,6 +204,21 @@ private:
     assert(m.PATH == "/usr/bin/");
     assert(m.Timeout == "3000"); //NOTE : Numbers are converted to strings and stored
     assert(m.level == Level.ERROR);
+    
+    // Test if serialization of Enums is correct
+    enum {
+    	blah
+    }
+    
+    enum SomeEnum {
+		SE_A,
+		SE_B,
+		SE_C
+	}
+    
+    s = Message("localhost","SOME ERROR!").blah(blah).aenum(SomeEnum.SE_A).toString();
+    s1 = "{\"version\":1.1, \"host\":\"localhost\", \"short_message\":\"SOME ERROR!\", \"level\":1, \"_aenum\":\"SE_A\", \"_blah\":0}";
+    assert(s == s1);
     
     // Strings are automatically escaped.
     s = Message("localhost", "SOME ERROR!").fullMessage("{\"name\" : \"Adil\"}").toString();

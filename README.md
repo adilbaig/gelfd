@@ -88,6 +88,7 @@ s.connect(new InternetAddress("localhost", 12200));
 
 // Start netcat to watch the output : `nc -lu 12200`
 
+auto m = Message("localhost","HUGE ERROR!");
 s.sendChunked(m, 500); // Chunk if message is larger than 500 bytes
 s.sendChunked(m, 500, true); // Same as above, but compresses the message (zlib) before chunking
 ````
@@ -109,6 +110,7 @@ s.connect(new InternetAddress("localhost", 12200));
 
 // Start netcat to watch the output : `nc -lu 12200`
 
+auto m = Message("localhost","HUGE ERROR!");
 foreach(c; Chunks(m, 500)) // Chunk if message is larger than 500 bytes 
     s.send(c); 
     
